@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/torch",
+  "textures": {
+    "torch": "thick_air:block/signal_torch"
+  }
+}

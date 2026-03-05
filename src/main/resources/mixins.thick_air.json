@@ -1,0 +1,16 @@
+{
+	"package": "com.leclowndu93150.thick_air.mixin",
+	"required": true,
+	"refmap": "${mixin_refmap}",
+	"target": "@env(DEFAULT)",
+	"minVersion": "0.8.5",
+	"compatibilityLevel": "JAVA_8",
+	"mixins": [
+		"WorldServerMixin",
+		"EntityLivingBaseMixin"
+	],
+	"server": [],
+	"client": [
+		"LayerBipedArmorMixin"
+	]
+}

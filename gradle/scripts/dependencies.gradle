@@ -51,18 +51,6 @@ dependencies {
     // 'maven.modrinth:jei:4.16.1.1000' << jei = project name, 4.16.1.1000 = file version
     // Full documentation: https://docs.modrinth.com/docs/tutorials/maven/
 
-    // Common dependency types (configuration):
-    // implementation = dependency available at both compile time and runtime
-    // runtimeOnly = runtime dependency
-    // compileOnly = compile time dependency
-    // annotationProcessor = annotation processing dependencies
-    // embed = bundle dependencies into final output artifact (no relocation)
-
-    // Transitive dependencies:
-    // (Dependencies that your dependency depends on)
-    // If you wish to exclude transitive dependencies in the described dependencies
-    // Use a closure as such:
-    // implementation ('com.google.code.gson:gson:2.8.6') {
-    //     transitive = false
-    // }
+    compileOnly rfg.deobf('curse.maven:baubles-227083:2518667')
+    runtimeOnly rfg.deobf('curse.maven:baubles-227083:2518667')
 }

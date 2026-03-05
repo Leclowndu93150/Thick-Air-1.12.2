@@ -1,0 +1,14 @@
+{
+  "variants": {
+    "facing=up,lit=true": { "model": "thick_air:signal_torch" },
+    "facing=up,lit=false": { "model": "thick_air:signal_torch" },
+    "facing=north,lit=true": { "model": "thick_air:signal_torch_wall", "y": 270 },
+    "facing=north,lit=false": { "model": "thick_air:signal_torch_wall", "y": 270 },
+    "facing=south,lit=true": { "model": "thick_air:signal_torch_wall", "y": 90 },
+    "facing=south,lit=false": { "model": "thick_air:signal_torch_wall", "y": 90 },
+    "facing=west,lit=true": { "model": "thick_air:signal_torch_wall", "y": 180 },
+    "facing=west,lit=false": { "model": "thick_air:signal_torch_wall", "y": 180 },
+    "facing=east,lit=true": { "model": "thick_air:signal_torch_wall" },
+    "facing=east,lit=false": { "model": "thick_air:signal_torch_wall" }
+  }
+}

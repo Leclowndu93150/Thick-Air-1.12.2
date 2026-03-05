@@ -1,0 +1,11 @@
+itemGroup.thick_air=Thick Air
+
+tile.thick_air.signal_torch.name=Signal Torch
+tile.thick_air.wall_signal_torch.name=Signal Torch
+tile.thick_air.safety_lantern.name=Safety Lantern
+item.thick_air.safety_lantern.name=Safety Lantern
+
+item.thick_air.respirator.name=Respirator
+item.thick_air.air_bladder.name=Air Bladder
+item.thick_air.reinforced_air_bladder.name=Reinforced Air Bladder
+item.thick_air.soulfire_bottle.name=Soulfire Bottle

@@ -1,0 +1,18 @@
+{
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "item",
+          "name": "thick_air:safety_lantern",
+          "weight": 1
+        },
+        {
+          "type": "empty",
+          "weight": 5
+        }
+      ]
+    }
+  ]
+}
