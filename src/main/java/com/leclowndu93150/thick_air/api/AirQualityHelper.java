@@ -19,17 +19,21 @@ public final class AirQualityHelper {
     private AirQualityHelper() {}
 
     public static AirQualityLevel getAirQualityAtLocation(EntityLivingBase entity) {
-        return getAirQualityAtLocation(entity.world, entity.getPositionEyes(1.0f));
+        return getAirQualityAtLocation(entity.world, entity.getPositionVector(), entity.getPositionEyes(1.0f));
     }
 
-    public static AirQualityLevel getAirQualityAtLocation(World world, Vec3d location) {
-        BlockPos eyePos = new BlockPos(location);
-        IBlockState blockAtEyes = world.getBlockState(eyePos);
+    public static AirQualityLevel getAirQualityAtLocation(World world, Vec3d pos) {
+        return getAirQualityAtLocation(world, pos, pos);
+    }
+
+    public static AirQualityLevel getAirQualityAtLocation(World world, Vec3d feetPos, Vec3d eyePos) {
+        BlockPos eyeBlockPos = new BlockPos(eyePos);
+        IBlockState blockAtEyes = world.getBlockState(eyeBlockPos);
         AirQualityLevel airQualityAtEyes = getAirQualityAtEyes(blockAtEyes);
         if (airQualityAtEyes != null) return airQualityAtEyes;
 
         AirQualityLevel bestAirBubbleQuality = null;
-        ChunkPos chunkAtCenter = new ChunkPos(eyePos);
+        ChunkPos chunkAtCenter = new ChunkPos(eyeBlockPos);
 
         for (int x = -2; x <= 2; x++) {
             for (int z = -2; z <= 2; z++) {
@@ -48,7 +52,7 @@ public final class AirQualityHelper {
                     AirQualityLevel airQualityLevel = entry.getValue();
 
                     if (bestAirBubbleQuality == null || airQualityLevel.isBetterThan(bestAirBubbleQuality)) {
-                        double distanceSq = location.squareDistanceTo(
+                        double distanceSq = eyePos.squareDistanceTo(
                                 blockPos.getX() + 0.5,
                                 blockPos.getY() + 0.5,
                                 blockPos.getZ() + 0.5
@@ -72,7 +76,7 @@ public final class AirQualityHelper {
         }
 
         String dimName = getDimensionName(world);
-        return Config.getAirQualityAtLevelByDimension(dimName, (int) Math.round(location.y));
+        return Config.getAirQualityAtLevelByDimension(dimName, (int) feetPos.y);
     }
 
     public static boolean isSensitiveToAirQuality(EntityLivingBase entity) {

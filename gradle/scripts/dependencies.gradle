@@ -53,4 +53,10 @@ dependencies {
 
     compileOnly rfg.deobf('curse.maven:baubles-227083:2518667')
     runtimeOnly rfg.deobf('curse.maven:baubles-227083:2518667')
+
+    runtimeOnly rfg.deobf('curse.maven:simpledifficulty-360779:3613814')
+
+    compileOnly rfg.deobf('curse.maven:unseens-nether-backport-1109447:7694245')
+    runtimeOnly rfg.deobf('curse.maven:unseens-nether-backport-1109447:7694245')
+    runtimeOnly rfg.deobf('curse.maven:nether-api-1306115:7216794')
 }

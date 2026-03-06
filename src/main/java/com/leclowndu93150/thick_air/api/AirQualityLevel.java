@@ -56,7 +56,12 @@ public enum AirQualityLevel implements IStringSerializable {
     }
 
     public int getAirAmountAfterProtection(EntityLivingBase entity) {
-        return this.isProtected(entity) ? 0 : this.getAirAmount(entity);
+        if (this.isProtected(entity)) return 0;
+        return this.getAirAmount(entity);
+    }
+
+    public boolean isEntityProtected(EntityLivingBase entity) {
+        return this.isProtected(entity);
     }
 
     boolean isProtected(EntityLivingBase entity) {
