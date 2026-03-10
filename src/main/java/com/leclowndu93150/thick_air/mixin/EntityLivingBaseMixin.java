@@ -16,7 +16,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class EntityLivingBaseMixin extends Entity {
 
     @Unique
-    private int thickair$savedAir = -1;
+    private boolean thickair$shouldRestore = false;
+
+    @Unique
+    private int thickair$savedAir = 0;
 
     public EntityLivingBaseMixin(World worldIn) {
         super(worldIn);
@@ -24,25 +27,25 @@ public abstract class EntityLivingBaseMixin extends Entity {
 
     @Inject(method = "onEntityUpdate", at = @At("HEAD"))
     private void thickair$beforeEntityUpdate(CallbackInfo ci) {
+        thickair$shouldRestore = false;
         if (!this.world.isRemote) {
             EntityLivingBase self = (EntityLivingBase) (Object) this;
             if (!self.isInsideOfMaterial(Material.WATER) && AirQualityHelper.isSensitiveToAirQuality(self)) {
                 AirQualityLevel quality = AirQualityHelper.getAirQualityAtLocation(self);
-                if (!quality.canBreathe) {
+                if (quality != AirQualityLevel.GREEN) {
                     thickair$savedAir = self.getAir();
-                    return;
+                    thickair$shouldRestore = true;
                 }
             }
         }
-        thickair$savedAir = -1;
     }
 
     @Inject(method = "onEntityUpdate", at = @At("RETURN"))
     private void thickair$afterEntityUpdate(CallbackInfo ci) {
-        if (thickair$savedAir != -1) {
+        if (thickair$shouldRestore) {
             EntityLivingBase self = (EntityLivingBase) (Object) this;
             self.setAir(thickair$savedAir);
-            thickair$savedAir = -1;
+            thickair$shouldRestore = false;
         }
     }
 }

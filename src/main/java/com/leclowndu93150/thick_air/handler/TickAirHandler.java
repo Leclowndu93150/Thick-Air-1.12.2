@@ -36,7 +36,7 @@ public class TickAirHandler {
                 entity.setAir(0);
                 entity.attackEntityFrom(DamageSource.DROWN, 2.0f);
             }
-        } else if (airQualityLevel.canBreathe && !airQualityLevel.isEntityProtected(entity)) {
+        } else if (airQualityLevel.isEntityProtected(entity) || airQualityLevel.canBreathe) {
             if (entity.world.getTotalWorldTime() % 4 == 0) {
                 int currentAir = entity.getAir();
                 if (currentAir < 300) {
