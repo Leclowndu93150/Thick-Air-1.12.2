@@ -2,6 +2,7 @@ package com.leclowndu93150.thick_air.handler;
 
 import com.leclowndu93150.thick_air.api.AirQualityHelper;
 import com.leclowndu93150.thick_air.api.AirQualityLevel;
+import com.leclowndu93150.thick_air.compat.AquaAcrobaticsCompat;
 import com.leclowndu93150.thick_air.network.PacketHandler;
 import com.leclowndu93150.thick_air.network.PlayerAirSyncMessage;
 import net.minecraft.entity.EntityLivingBase;
@@ -23,9 +24,13 @@ public class TickAirHandler {
         int airAmount = airQualityLevel.getAirAmountAfterProtection(entity);
 
         if (airAmount > 0) {
-            int currentAir = entity.getAir();
-            if (currentAir < 300) {
-                entity.setAir(Math.min(300, currentAir + airAmount));
+            if (airQualityLevel == AirQualityLevel.GREEN && AquaAcrobaticsCompat.isSlowReplenishActive()) {
+                // skip — Aqua Acrobatics handles gradual refill in onEntityUpdate
+            } else {
+                int currentAir = entity.getAir();
+                if (currentAir < 300) {
+                    entity.setAir(Math.min(300, currentAir + airAmount));
+                }
             }
         } else if (airAmount < 0) {
             int currentAir = entity.getAir();

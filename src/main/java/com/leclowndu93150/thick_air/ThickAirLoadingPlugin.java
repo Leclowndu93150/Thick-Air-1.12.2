@@ -4,7 +4,7 @@ import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import zone.rong.mixinbooter.IEarlyMixinLoader;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +14,10 @@ public class ThickAirLoadingPlugin implements IFMLLoadingPlugin, IEarlyMixinLoad
 
     @Override
     public List<String> getMixinConfigs() {
-        return Collections.singletonList("mixins.thick_air.json");
+        List<String> configs = new ArrayList<>();
+        configs.add("mixins.thick_air.json");
+        configs.add("mixins.thick_air.aquaacrobatics.json");
+        return configs;
     }
 
     @Override

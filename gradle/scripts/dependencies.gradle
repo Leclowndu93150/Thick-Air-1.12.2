@@ -56,6 +56,9 @@ dependencies {
 
     runtimeOnly rfg.deobf('curse.maven:simpledifficulty-360779:3613814')
 
+    compileOnly rfg.deobf('curse.maven:aqua-acrobatics-321792:5225456')
+    runtimeOnly rfg.deobf('curse.maven:aqua-acrobatics-321792:5225456')
+
     compileOnly rfg.deobf('curse.maven:unseens-nether-backport-1109447:7694245')
     runtimeOnly rfg.deobf('curse.maven:unseens-nether-backport-1109447:7694245')
     runtimeOnly rfg.deobf('curse.maven:nether-api-1306115:7216794')
