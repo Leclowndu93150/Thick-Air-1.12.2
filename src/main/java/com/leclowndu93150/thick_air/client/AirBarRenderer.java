@@ -21,7 +21,7 @@ public class AirBarRenderer extends Gui {
 
     private static final ResourceLocation ICONS = new ResourceLocation("textures/gui/icons.png");
 
-    @SubscribeEvent(priority = EventPriority.LOW)
+    @SubscribeEvent(priority = EventPriority.HIGH)
     public void onRenderOverlayPre(RenderGameOverlayEvent.Pre event) {
         if (event.getType() != RenderGameOverlayEvent.ElementType.AIR) return;
 

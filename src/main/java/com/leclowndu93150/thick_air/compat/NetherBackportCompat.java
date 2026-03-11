@@ -1,8 +1,11 @@
 package com.leclowndu93150.thick_air.compat;
 
 import com.unseen.nb.client.particles.ParticleSoul;
+import com.unseen.nb.init.ModSoundHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -16,6 +19,18 @@ public class NetherBackportCompat {
             nbLoaded = Loader.isModLoaded("nb");
         }
         return nbLoaded;
+    }
+
+    public static void playSoulSound(World world, EntityPlayer player) {
+        if (!isLoaded()) return;
+        playSoulSoundInternal(world, player);
+    }
+
+    private static void playSoulSoundInternal(World world, EntityPlayer player) {
+        float volume = 0.6F + world.rand.nextFloat() * 0.4F;
+        float pitch = 0.6F + world.rand.nextFloat() * 0.4F;
+        world.playSound(null, player.posX, player.posY, player.posZ,
+                ModSoundHandler.SOUL_SAND_SCREAM, SoundCategory.PLAYERS, volume, pitch);
     }
 
     @SideOnly(Side.CLIENT)

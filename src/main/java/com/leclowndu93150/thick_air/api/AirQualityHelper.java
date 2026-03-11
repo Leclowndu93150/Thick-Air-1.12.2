@@ -12,6 +12,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public final class AirQualityHelper {
@@ -46,10 +48,19 @@ public final class AirQualityHelper {
                 if (capability == null) continue;
 
                 Map<BlockPos, AirQualityLevel> airBubblePositions = capability.getAirBubblePositionsView();
+                List<BlockPos> staleEntries = null;
 
                 for (Map.Entry<BlockPos, AirQualityLevel> entry : airBubblePositions.entrySet()) {
                     BlockPos blockPos = entry.getKey();
                     AirQualityLevel airQualityLevel = entry.getValue();
+
+                    IBlockState actualState = chunk.getBlockState(blockPos);
+                    AirQualityLevel actualQuality = getAirQualityFromBlock(actualState);
+                    if (actualQuality == null) {
+                        if (staleEntries == null) staleEntries = new ArrayList<>();
+                        staleEntries.add(blockPos);
+                        continue;
+                    }
 
                     if (bestAirBubbleQuality == null || airQualityLevel.isBetterThan(bestAirBubbleQuality)) {
                         double distanceSq = eyePos.squareDistanceTo(
@@ -61,6 +72,7 @@ public final class AirQualityHelper {
 
                         if (distanceSq < radiusSq) {
                             if (airQualityLevel == AirQualityLevel.GREEN) {
+                                removeStaleEntries(capability, staleEntries, chunk);
                                 return AirQualityLevel.GREEN;
                             } else {
                                 bestAirBubbleQuality = airQualityLevel;
@@ -68,6 +80,8 @@ public final class AirQualityHelper {
                         }
                     }
                 }
+
+                removeStaleEntries(capability, staleEntries, chunk);
             }
         }
 
@@ -77,6 +91,14 @@ public final class AirQualityHelper {
 
         String dimName = getDimensionName(world);
         return Config.getAirQualityAtLevelByDimension(dimName, (int) feetPos.y);
+    }
+
+    private static void removeStaleEntries(IAirBubblePositions capability, List<BlockPos> staleEntries, Chunk chunk) {
+        if (staleEntries == null) return;
+        for (BlockPos pos : staleEntries) {
+            capability.getAirBubblePositions().remove(pos);
+        }
+        chunk.markDirty();
     }
 
     public static boolean isSensitiveToAirQuality(EntityLivingBase entity) {

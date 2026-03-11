@@ -36,6 +36,10 @@ public class SoulfireBottleItem extends Item {
             worldIn.playSound(null, player.posX, player.posY, player.posZ,
                     SoundEvents.BLOCK_GLASS_BREAK, SoundCategory.PLAYERS, 1.0f, 1.0f);
 
+            if (!worldIn.isRemote) {
+                NetherBackportCompat.playSoulSound(worldIn, player);
+            }
+
             if (worldIn.isRemote) {
                 NetherBackportCompat.spawnSoulParticles(player);
             }
