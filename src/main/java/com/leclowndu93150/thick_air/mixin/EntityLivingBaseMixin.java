@@ -2,6 +2,7 @@ package com.leclowndu93150.thick_air.mixin;
 
 import com.leclowndu93150.thick_air.api.AirQualityHelper;
 import com.leclowndu93150.thick_air.api.AirQualityLevel;
+import com.leclowndu93150.thick_air.compat.AquaAcrobaticsCompat;
 import com.leclowndu93150.thick_air.network.PacketHandler;
 import com.leclowndu93150.thick_air.network.PlayerAirSyncMessage;
 import net.minecraft.block.material.Material;

@@ -18,6 +18,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class AirBarRenderer extends Gui {
 
     private static final ResourceLocation ICONS = new ResourceLocation("textures/gui/icons.png");
+    private boolean wasUnderwater = false;
+    private int waterExitCooldown = 0;
 
     @SubscribeEvent
     public void onRenderOverlayPost(RenderGameOverlayEvent.Post event) {
@@ -26,7 +28,20 @@ public class AirBarRenderer extends Gui {
         Minecraft mc = Minecraft.getMinecraft();
         EntityPlayer player = mc.player;
         if (player == null || player.isCreative() || player.isSpectator()) return;
-        if (player.isInsideOfMaterial(Material.WATER)) return;
+
+        boolean underwater = player.isInsideOfMaterial(Material.WATER);
+        if (underwater) {
+            wasUnderwater = true;
+            return;
+        }
+        if (wasUnderwater) {
+            wasUnderwater = false;
+            waterExitCooldown = 2;
+        }
+        if (waterExitCooldown > 0) {
+            waterExitCooldown--;
+            return;
+        }
 
         int air = ClientAirData.air;
         if (air >= 300) return;
