@@ -15,6 +15,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.util.EnumHelper;
@@ -30,6 +32,9 @@ public class ModRegistry {
     public static final ItemArmor.ArmorMaterial RESPIRATOR_MATERIAL = EnumHelper.addArmorMaterial(
             "thick_air:respirator", ThickAir.MODID + ":respirator",
             5, new int[]{0, 0, 0, 1}, 15, SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, 0.0f);
+
+    public static final SoundEvent BUBBLE_POP = new SoundEvent(new ResourceLocation(ThickAir.MODID, "ui.hud.bubble_pop"))
+            .setRegistryName(ThickAir.MODID, "bubble_pop");
 
     public static final CreativeTabs THICK_AIR_TAB = new CreativeTabs(ThickAir.MODID) {
         @Override
@@ -48,6 +53,11 @@ public class ModRegistry {
     public static SoulfireBottleItem SOULFIRE_BOTTLE;
     public static Item SAFETY_LANTERN_ITEM;
     public static ItemBlock SIGNAL_TORCH_ITEM;
+
+    @SubscribeEvent
+    public static void registerSounds(RegistryEvent.Register<SoundEvent> event) {
+        event.getRegistry().register(BUBBLE_POP);
+    }
 
     @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> event) {

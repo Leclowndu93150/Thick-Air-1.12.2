@@ -1,0 +1,8 @@
+{
+	"ui.hud.bubble_pop": {
+		"category": "player",
+		"sounds": [
+			"thick_air:ui/hud/bubble_pop"
+		]
+	}
+}

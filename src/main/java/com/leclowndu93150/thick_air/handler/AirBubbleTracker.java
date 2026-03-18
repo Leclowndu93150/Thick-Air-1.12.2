@@ -12,6 +12,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.ChunkWatchEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -23,8 +24,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AirBubbleTracker {
-    private static final Set<ChunkPos> CHUNKS_TO_SCAN = ConcurrentHashMap.newKeySet();
-    private static final List<Map.Entry<ChunkPos, BlockPos>> CHUNK_SCANNING_PROGRESS = Collections.synchronizedList(new LinkedList<>());
+    private static final Map<Integer, Set<ChunkPos>> CHUNKS_TO_SCAN = new ConcurrentHashMap<>();
+    private static final Map<Integer, List<Map.Entry<ChunkPos, BlockPos>>> CHUNK_SCANNING_PROGRESS = new ConcurrentHashMap<>();
 
     public static void onBlockStateChange(WorldServer world, BlockPos pos, IBlockState oldState, IBlockState newState) {
         ChunkPos chunkPos = new ChunkPos(pos);
@@ -59,16 +60,32 @@ public class AirBubbleTracker {
     @SubscribeEvent
     public void onChunkLoad(ChunkEvent.Load event) {
         if (event.getWorld() instanceof WorldServer) {
+            int dim = event.getWorld().provider.getDimension();
             Chunk chunk = event.getChunk();
-            CHUNKS_TO_SCAN.add(chunk.getPos());
-            CHUNK_SCANNING_PROGRESS.add(new AbstractMap.SimpleEntry<>(chunk.getPos(), getChunkStartingPosition(chunk)));
+            CHUNKS_TO_SCAN.computeIfAbsent(dim, k -> ConcurrentHashMap.newKeySet()).add(chunk.getPos());
+            CHUNK_SCANNING_PROGRESS.computeIfAbsent(dim, k -> Collections.synchronizedList(new LinkedList<>()))
+                    .add(new AbstractMap.SimpleEntry<>(chunk.getPos(), getChunkStartingPosition(chunk)));
+        }
+    }
+
+    @SubscribeEvent
+    public void onChunkPopulated(PopulateChunkEvent.Post event) {
+        if (event.getWorld() instanceof WorldServer) {
+            int dim = event.getWorld().provider.getDimension();
+            ChunkPos chunkPos = new ChunkPos(event.getChunkX(), event.getChunkZ());
+            CHUNKS_TO_SCAN.computeIfAbsent(dim, k -> ConcurrentHashMap.newKeySet()).add(chunkPos);
+            Chunk chunk = event.getWorld().getChunk(event.getChunkX(), event.getChunkZ());
+            CHUNK_SCANNING_PROGRESS.computeIfAbsent(dim, k -> Collections.synchronizedList(new LinkedList<>()))
+                    .add(new AbstractMap.SimpleEntry<>(chunkPos, getChunkStartingPosition(chunk)));
         }
     }
 
     @SubscribeEvent
     public void onChunkUnload(ChunkEvent.Unload event) {
         if (event.getWorld() instanceof WorldServer) {
-            CHUNKS_TO_SCAN.remove(event.getChunk().getPos());
+            int dim = event.getWorld().provider.getDimension();
+            Set<ChunkPos> set = CHUNKS_TO_SCAN.get(dim);
+            if (set != null) set.remove(event.getChunk().getPos());
         }
     }
 
@@ -90,8 +107,9 @@ public class AirBubbleTracker {
     @SubscribeEvent
     public void onWorldUnload(WorldEvent.Unload event) {
         if (event.getWorld() instanceof WorldServer) {
-            CHUNKS_TO_SCAN.clear();
-            CHUNK_SCANNING_PROGRESS.clear();
+            int dim = event.getWorld().provider.getDimension();
+            CHUNKS_TO_SCAN.remove(dim);
+            CHUNK_SCANNING_PROGRESS.remove(dim);
         }
     }
 
@@ -100,53 +118,53 @@ public class AirBubbleTracker {
         if (event.phase != TickEvent.Phase.END) return;
         if (!(event.world instanceof WorldServer)) return;
         WorldServer world = (WorldServer) event.world;
+        int dim = world.provider.getDimension();
 
-        if (!CHUNK_SCANNING_PROGRESS.isEmpty()) {
-            synchronized (CHUNK_SCANNING_PROGRESS) {
-                if (CHUNK_SCANNING_PROGRESS.isEmpty()) return;
+        List<Map.Entry<ChunkPos, BlockPos>> progress = CHUNK_SCANNING_PROGRESS.get(dim);
+        if (progress == null || progress.isEmpty()) return;
 
-                ListIterator<Map.Entry<ChunkPos, BlockPos>> iterator = CHUNK_SCANNING_PROGRESS.listIterator();
-                Map.Entry<ChunkPos, BlockPos> entry = iterator.next();
-                ChunkPos chunkPos = entry.getKey();
+        Set<ChunkPos> toScan = CHUNKS_TO_SCAN.get(dim);
+        if (toScan == null) return;
 
-                if (CHUNKS_TO_SCAN.contains(chunkPos)) {
-                    if (!world.isBlockLoaded(new BlockPos(chunkPos.x << 4, 0, chunkPos.z << 4))) return;
-                    Chunk chunk = world.getChunk(chunkPos.x, chunkPos.z);
+        synchronized (progress) {
+            if (progress.isEmpty()) return;
 
-                    IAirBubblePositions capability = chunk.getCapability(AirBubbleCapability.AIR_BUBBLE_CAP, null);
-                    if (capability == null) {
-                        iterator.remove();
-                        return;
-                    }
+            ListIterator<Map.Entry<ChunkPos, BlockPos>> iterator = progress.listIterator();
+            Map.Entry<ChunkPos, BlockPos> entry = iterator.next();
+            ChunkPos chunkPos = entry.getKey();
 
-                    capability.setSkipCountLeft(8);
-                    HashMap<BlockPos, AirQualityLevel> airBubblePositions = new HashMap<>();
-                    BlockPos blockPos = collectAirQualityPositions(chunk, entry.getValue(), airBubblePositions);
-                    boolean markDirty = false;
+            if (toScan.contains(chunkPos)) {
+                if (!world.isBlockLoaded(new BlockPos(chunkPos.x << 4, 0, chunkPos.z << 4))) return;
+                Chunk chunk = world.getChunk(chunkPos.x, chunkPos.z);
 
-                    if (entry.getValue().equals(getChunkStartingPosition(chunk))) {
-                        capability.getAirBubblePositions().clear();
-                        capability.getAirBubblePositions().putAll(airBubblePositions);
-                        sendToTracking(world, chunkPos, airBubblePositions, ChunkAirQualityMessage.Mode.REPLACE);
-                        markDirty = true;
-                    } else if (!airBubblePositions.isEmpty()) {
-                        capability.getAirBubblePositions().putAll(airBubblePositions);
-                        sendToTracking(world, chunkPos, airBubblePositions, ChunkAirQualityMessage.Mode.ADD);
-                        markDirty = true;
-                    }
-
-                    if (markDirty) {
-                        chunk.markDirty();
-                    }
-
-                    if (blockPos != null) {
-                        iterator.set(new AbstractMap.SimpleEntry<>(chunkPos, blockPos));
-                        return;
-                    }
+                IAirBubblePositions capability = chunk.getCapability(AirBubbleCapability.AIR_BUBBLE_CAP, null);
+                if (capability == null) {
+                    iterator.remove();
+                    return;
                 }
-                iterator.remove();
-                CHUNKS_TO_SCAN.remove(chunkPos);
+
+                capability.setSkipCountLeft(8);
+                HashMap<BlockPos, AirQualityLevel> airBubblePositions = new HashMap<>();
+                BlockPos blockPos = collectAirQualityPositions(chunk, entry.getValue(), airBubblePositions);
+
+                if (entry.getValue().equals(getChunkStartingPosition(chunk))) {
+                    capability.getAirBubblePositions().clear();
+                    capability.getAirBubblePositions().putAll(airBubblePositions);
+                    sendToTracking(world, chunkPos, airBubblePositions, ChunkAirQualityMessage.Mode.REPLACE);
+                    chunk.markDirty();
+                } else if (!airBubblePositions.isEmpty()) {
+                    capability.getAirBubblePositions().putAll(airBubblePositions);
+                    sendToTracking(world, chunkPos, airBubblePositions, ChunkAirQualityMessage.Mode.ADD);
+                    chunk.markDirty();
+                }
+
+                if (blockPos != null) {
+                    iterator.set(new AbstractMap.SimpleEntry<>(chunkPos, blockPos));
+                    return;
+                }
             }
+            iterator.remove();
+            toScan.remove(chunkPos);
         }
     }
 

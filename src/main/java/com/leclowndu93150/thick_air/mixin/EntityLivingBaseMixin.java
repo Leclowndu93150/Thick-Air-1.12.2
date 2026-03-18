@@ -2,7 +2,6 @@ package com.leclowndu93150.thick_air.mixin;
 
 import com.leclowndu93150.thick_air.api.AirQualityHelper;
 import com.leclowndu93150.thick_air.api.AirQualityLevel;
-import com.leclowndu93150.thick_air.compat.AquaAcrobaticsCompat;
 import com.leclowndu93150.thick_air.network.PacketHandler;
 import com.leclowndu93150.thick_air.network.PlayerAirSyncMessage;
 import net.minecraft.block.material.Material;
@@ -39,17 +38,15 @@ public abstract class EntityLivingBaseMixin extends Entity {
     private void thickair$beforeEntityUpdate(CallbackInfo ci) {
         thickair$shouldRestore = false;
         thickair$shouldSyncAfter = false;
-        if (!this.world.isRemote) {
-            EntityLivingBase self = (EntityLivingBase) (Object) this;
-            if (!self.isInsideOfMaterial(Material.WATER) && AirQualityHelper.isSensitiveToAirQuality(self)) {
-                AirQualityLevel quality = AirQualityHelper.getAirQualityAtLocation(self);
-                thickair$qualityOrdinal = quality.ordinal();
-                if (quality != AirQualityLevel.GREEN) {
-                    thickair$savedAir = self.getAir();
-                    thickair$shouldRestore = true;
-                } else if (self instanceof EntityPlayerMP) {
-                    thickair$shouldSyncAfter = true;
-                }
+        EntityLivingBase self = (EntityLivingBase) (Object) this;
+        if (!self.isInsideOfMaterial(Material.WATER) && AirQualityHelper.isSensitiveToAirQuality(self)) {
+            AirQualityLevel quality = AirQualityHelper.getAirQualityAtLocation(self);
+            thickair$qualityOrdinal = quality.ordinal();
+            if (quality != AirQualityLevel.GREEN) {
+                thickair$savedAir = self.getAir();
+                thickair$shouldRestore = true;
+            } else if (!this.world.isRemote && self instanceof EntityPlayerMP) {
+                thickair$shouldSyncAfter = true;
             }
         }
     }

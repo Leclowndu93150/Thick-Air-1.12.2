@@ -12,7 +12,11 @@ public class Config {
 
     public static boolean enableSignalTorches = true;
     public static boolean enableBaubles = true;
-    public static int drownedChoking = 0;
+    public static int chokingAmount = 0;
+    private static String[] chokingEntities = {
+            "minecraft:zombie"
+    };
+    private static Set<String> chokingEntitySet = null;
     public static double yellowAirProviderRadius = 6.0;
     public static double blueAirProviderRadius = 6.0;
     public static double redAirProviderRadius = 3.0;
@@ -47,6 +51,14 @@ public class Config {
     };
     private static Map<String, AirQualityLevel> airProviderMap = null;
 
+    public static boolean isChokingEntity(String registryName) {
+        if (chokingEntitySet == null) {
+            chokingEntitySet = new HashSet<>();
+            for (String s : chokingEntities) chokingEntitySet.add(s.trim());
+        }
+        return chokingEntitySet.contains(registryName);
+    }
+
     public static AirQualityLevel getAirProviderQuality(String registryName) {
         if (airProviderMap == null) {
             airProviderMap = new HashMap<>();
@@ -71,8 +83,14 @@ public class Config {
         enableBaubles = config.getBoolean("enableBaubles", Configuration.CATEGORY_GENERAL,
                 true, "Whether to allow the Respirator to be worn as a Baubles HEAD slot item (requires Baubles mod)");
 
-        drownedChoking = config.getInt("drownedChoking", Configuration.CATEGORY_GENERAL,
-                0, 0, 72000, "How much air an attack from certain mobs removes. Set to 0 to disable.");
+        chokingAmount = config.getInt("chokingAmount", Configuration.CATEGORY_GENERAL,
+                0, 0, 72000, "How much air an attack from entities in the choking list removes. Set to 0 to disable.");
+
+        chokingEntities = config.getStringList("chokingEntities", Configuration.CATEGORY_GENERAL,
+                chokingEntities,
+                "Entities whose attacks reduce the player's air supply.\n" +
+                "Use registry names like minecraft:zombie, minecraft:husk.");
+        chokingEntitySet = null;
 
         yellowAirProviderRadius = config.getFloat("yellowAirProviderRadius", "ranges",
                 6.0f, 1.0f, 32.0f, "Radius of yellow air provider bubbles");

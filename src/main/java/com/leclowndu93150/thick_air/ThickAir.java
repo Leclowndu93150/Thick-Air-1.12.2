@@ -3,6 +3,7 @@ package com.leclowndu93150.thick_air;
 import com.leclowndu93150.thick_air.block.SignalTorchBlock;
 import com.leclowndu93150.thick_air.capability.AirBubbleCapability;
 import com.leclowndu93150.thick_air.handler.AirBubbleTracker;
+import com.leclowndu93150.thick_air.handler.ChokingAttackHandler;
 import com.leclowndu93150.thick_air.handler.TickAirHandler;
 import com.leclowndu93150.thick_air.network.PacketHandler;
 import com.leclowndu93150.thick_air.proxy.CommonProxy;
@@ -41,6 +42,7 @@ public class ThickAir {
         MinecraftForge.EVENT_BUS.register(new TickAirHandler());
         MinecraftForge.EVENT_BUS.register(new AirBubbleTracker());
         MinecraftForge.EVENT_BUS.register(new SignalTorchBlock.EventHandler());
+        MinecraftForge.EVENT_BUS.register(new ChokingAttackHandler());
         MinecraftForge.EVENT_BUS.register(new LootHandler());
         proxy.init(event);
     }
