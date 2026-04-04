@@ -46,7 +46,7 @@ public class AirBarRenderer extends Gui {
 
         if (underwater) {
             wasUnderwater = true;
-            int air = player.getAir();
+            int air = ClientAirData.air;
             renderEmptyDots(mc, player, air, 300, event.getResolution(), true);
             handleBubblePopSound(player, air, 300);
             return;

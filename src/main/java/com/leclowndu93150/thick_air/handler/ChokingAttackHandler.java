@@ -11,7 +11,21 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import java.util.Map;
+import java.util.WeakHashMap;
+
 public class ChokingAttackHandler {
+
+    private static final Map<EntityLivingBase, Integer> chokingTargetAir = new WeakHashMap<>();
+
+    public static int getChokingTargetAir(EntityLivingBase entity) {
+        Integer target = chokingTargetAir.get(entity);
+        return target != null ? target : -1;
+    }
+
+    public static void clearChokingTarget(EntityLivingBase entity) {
+        chokingTargetAir.remove(entity);
+    }
 
     @SubscribeEvent
     public void onLivingHurt(LivingHurtEvent event) {
@@ -29,8 +43,9 @@ public class ChokingAttackHandler {
 
         if (Config.isChokingEntity(registryName.toString())) {
             EntityPlayerMP player = (EntityPlayerMP) target;
-            int newAir = Math.max(-20, player.getAir() - Config.chokingAmount);
+            int newAir = Math.max(0, player.getAir() - Config.chokingAmount);
             player.setAir(newAir);
+            chokingTargetAir.put(player, newAir);
 
             int qualityOrdinal = AirQualityHelper.getAirQualityAtLocation(player).ordinal();
             PacketHandler.INSTANCE.sendTo(
